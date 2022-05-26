@@ -24,7 +24,7 @@ import {
 const height = Dimensions.get('screen').height
 const width = Dimensions.get('screen').width
 
-
+var page = 0
 
 const  FullScreen = (props) => {
     const {query} = props.route.params
@@ -56,12 +56,17 @@ const  FullScreen = (props) => {
         })
         
       }
-
-      fetch(`https://api.unsplash.com/search/photos?query=${query}`, requestOptions)
+      page = page + 1
+      fetch(`https://api.unsplash.com/search/photos?page=${page}&query=${query}`, requestOptions)
         .then(response => response.json())
         .then(result => {
           console.log('Result Query ', result.results)
-          setCarousalItems(result.results)
+          if (carouselItems){
+            const newArr = carouselItems.concat(result.results)
+            setCarousalItems(newArr)
+          }else{
+            setCarousalItems(result.results)
+          }          
           setRefreshing(false)
         })
         .catch(error => {
@@ -105,7 +110,13 @@ const  FullScreen = (props) => {
           data={carouselItems}
           keyExtractor={keyExtractor}
           numColumns={2}
-          
+          initialNumToRender={carouselItems.length}
+          onEndReached={()=>{
+            FindImages(query)
+          }}
+          onEndReachedThreshold={0.5}
+          style={{paddingBottom:height*0.2,flex:0}}
+          //contentContainerStyle={{height:'80%'}}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={()=>FindImages(query)} 
                title="Refreshing" 
@@ -122,7 +133,7 @@ const  FullScreen = (props) => {
             })}
                >
                  <View style={{height:"95%",width:"95%",borderRadius:15,overflow:'hidden'}}>
-                  <ImageBackground source={{uri:item.urls.raw}} style={{height:"100%",width:"100%",alignItems:'flex-end'}}>
+                  <ImageBackground source={{uri:item.urls.small_s3}} style={{height:"100%",width:"100%",alignItems:'flex-end'}}>
                     <Pressable onPress={()=>likeClicked(item.id)} style={{width:40,height:40,margin:10,borderRadius:5,justifyContent:'center',alignItems:'center',backgroundColor:'rgba(113,113,113,.52)'}}>
                       {likedArr? likedArr.findIndex((ele)=>ele == item.id) >= 0?
                       <Image source={require('../assets/like.png')} style={{width:30,height:30,tintColor:'#FFFFFF'}} />
