@@ -13,6 +13,7 @@ import {
   TextInput,
   Alert,
   Image,
+  ToastAndroid,
   NativeModules
 } from "react-native"
  // 
@@ -26,14 +27,23 @@ const ImageDisplay = (props) => {
   const [isloading,setIsLoading] = useState(false)
   const [Activity_Indicator,setActivityIndicator] = useState(true)
   const {item} = props.route.params
-  
+  const [success,setSuccess] = useState(null)
+  const [inProcess, setInProcess] = useState(false)
 
 const setWallpaperListener = () => {
+  if (success){
+    ToastAndroid.show('Wallpaper set already',ToastAndroid.LONG)
+    return
+  }
+  setInProcess(true)
   ManageWallpaper.setWallpaper(
     {
       uri: item.urls.full,
     },
     res => {
+      setSuccess(true)
+      setInProcess(false)
+      ToastAndroid.show('Wallpaper is Set',ToastAndroid.LONG)
       console.log('Response: ', res);
     },
     TYPE.HOME,
@@ -65,7 +75,8 @@ const setWallpaperListener = () => {
           <View style={{height:"70%",width:"100%",justifyContent:"flex-end",backgroundColor:"transparent",alignItems:"center"}}>
             <TouchableOpacity onPress={()=>setWallpaperListener()}
              style={{height:"8%",width:"40%",borderRadius:15,backgroundColor:"rgba(225,225,225,0.9)",justifyContent:"center",alignItems:"center"}}>
-              <Text style={{color:"#121212",fontSize:16}}>Set as Wallpaper</Text>
+              {inProcess?<ActivityIndicator size={16} color='#121212' />:
+              <Text style={{color:"#121212",fontSize:16}}>Set as Wallpaper</Text>}
             </TouchableOpacity>
           </View>
         </ImageBackground>
